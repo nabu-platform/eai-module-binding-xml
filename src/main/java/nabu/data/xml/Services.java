@@ -52,13 +52,17 @@ public class Services {
 	
 	@SuppressWarnings("unchecked")
 	@WebResult(name = "uri")
-	public URI store(@WebParam(name = "data") @NotNull Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "context") String context) throws URISyntaxException, IOException {
+	public URI store(@WebParam(name = "data") Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "context") String context, @WebParam(name = "name") String name) throws URISyntaxException, IOException {
+		if (data == null) {
+			return null;
+		}
 		ComplexContent complexContent = data instanceof ComplexContent ? (ComplexContent) data : ComplexContentWrapperFactory.getInstance().getWrapper().wrap(data);
 		XMLBinding binding = new XMLBinding(complexContent.getType(), charset == null ? Charset.defaultCharset() : charset);
+		// datastore output stream is buffered
 		DatastoreOutputStream streamable = nabu.frameworks.datastore.Services.streamable(runtime, context, complexContent.getType().getName() + ".xml", "application/xml");
 		if (streamable != null) {
 			try {
-				binding.marshal(streamable, data instanceof ComplexContent ? (ComplexContent) data : ComplexContentWrapperFactory.getInstance().getWrapper().wrap(data));
+				binding.marshal(streamable, complexContent);
 			}
 			finally {
 				streamable.close();
@@ -68,7 +72,7 @@ public class Services {
 		else {
 			InputStream marshal = marshal(data, charset);
 			ContextualWritableDatastore<String> datastore = nabu.frameworks.datastore.Services.getAsDatastore(this.context);
-			return datastore.store(context, marshal, complexContent.getType().getName() + ".xml", "application/xml");
+			return datastore.store(context, marshal, name == null ? complexContent.getType().getName() + ".xml" : name, "application/xml");
 		}
 	}
 }
