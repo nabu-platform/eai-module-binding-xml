@@ -33,10 +33,11 @@ public class Services {
 	private ServiceRuntime runtime;
 	
 	@WebResult(name = "unmarshalled")
-	public Object unmarshal(@WebParam(name = "input") @NotNull InputStream input, @NotNull @WebParam(name = "type") String type, @WebParam(name = "forceRootNameMatch") Boolean forceRootTypeMatch, @WebParam(name = "charset") Charset charset, @WebParam(name = "windows") List<Window> windows) throws IOException, ParseException {
+	public Object unmarshal(@WebParam(name = "input") @NotNull InputStream input, @NotNull @WebParam(name = "type") String type, @WebParam(name = "forceRootNameMatch") Boolean forceRootTypeMatch, @WebParam(name = "charset") Charset charset, @WebParam(name = "windows") List<Window> windows, @WebParam(name = "ignoreUndefinedFields") Boolean ignoreUndefinedFields) throws IOException, ParseException {
 		ComplexType resolve = (ComplexType) EAIResourceRepository.getInstance().resolve(type);
 		XMLBinding binding = new XMLBinding(resolve, charset == null ? Charset.defaultCharset() : charset);
 		binding.setForceRootTypeMatch(forceRootTypeMatch != null && forceRootTypeMatch);
+		binding.setIgnoreUndefined(ignoreUndefinedFields != null && ignoreUndefinedFields);
 		return binding.unmarshal(input, windows == null || windows.isEmpty() ? new Window[0] : windows.toArray(new Window[windows.size()]));
 	}
 	
