@@ -60,7 +60,7 @@ public class Services {
 		ComplexContent complexContent = data instanceof ComplexContent ? (ComplexContent) data : ComplexContentWrapperFactory.getInstance().getWrapper().wrap(data);
 		XMLBinding binding = new XMLBinding(complexContent.getType(), charset == null ? Charset.defaultCharset() : charset);
 		// datastore output stream is buffered
-		DatastoreOutputStream streamable = nabu.frameworks.datastore.Services.streamable(runtime, context, complexContent.getType().getName() + ".xml", "application/xml");
+		DatastoreOutputStream streamable = nabu.frameworks.datastore.Services.streamable(runtime, context, name == null ? complexContent.getType().getName() + ".xml" : name, "application/xml");
 		if (streamable != null) {
 			try {
 				binding.marshal(streamable, complexContent);
