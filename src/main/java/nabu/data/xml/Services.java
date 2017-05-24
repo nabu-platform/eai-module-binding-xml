@@ -43,9 +43,12 @@ public class Services {
 	
 	@SuppressWarnings("unchecked")
 	@WebResult(name = "marshalled")
-	public InputStream marshal(@WebParam(name = "data") @NotNull Object data, @WebParam(name = "charset") Charset charset) throws IOException {
+	public InputStream marshal(@WebParam(name = "data") @NotNull Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "prettyPrint") Boolean prettyPrint) throws IOException {
 		ComplexContent complexContent = data instanceof ComplexContent ? (ComplexContent) data : ComplexContentWrapperFactory.getInstance().getWrapper().wrap(data);
 		XMLBinding binding = new XMLBinding(complexContent.getType(), charset == null ? Charset.defaultCharset() : charset);
+		if (prettyPrint != null) {
+			binding.setPrettyPrint(prettyPrint);
+		}
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		binding.marshal(output, complexContent);
 		return new ByteArrayInputStream(output.toByteArray());
@@ -53,12 +56,15 @@ public class Services {
 	
 	@SuppressWarnings("unchecked")
 	@WebResult(name = "uri")
-	public URI store(@WebParam(name = "data") Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "context") String context, @WebParam(name = "name") String name) throws URISyntaxException, IOException {
+	public URI store(@WebParam(name = "data") Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "context") String context, @WebParam(name = "name") String name, @WebParam(name = "prettyPrint") Boolean prettyPrint) throws URISyntaxException, IOException {
 		if (data == null) {
 			return null;
 		}
 		ComplexContent complexContent = data instanceof ComplexContent ? (ComplexContent) data : ComplexContentWrapperFactory.getInstance().getWrapper().wrap(data);
 		XMLBinding binding = new XMLBinding(complexContent.getType(), charset == null ? Charset.defaultCharset() : charset);
+		if (prettyPrint != null) {
+			binding.setPrettyPrint(prettyPrint);
+		}
 		// datastore output stream is buffered
 		DatastoreOutputStream streamable = nabu.frameworks.datastore.Services.streamable(runtime, context, name == null ? complexContent.getType().getName() + ".xml" : name, "application/xml");
 		if (streamable != null) {
@@ -71,7 +77,7 @@ public class Services {
 			return streamable.getURI();
 		}
 		else {
-			InputStream marshal = marshal(data, charset);
+			InputStream marshal = marshal(data, charset, prettyPrint);
 			ContextualWritableDatastore<String> datastore = nabu.frameworks.datastore.Services.getAsDatastore(this.context);
 			return datastore.store(context, marshal, name == null ? complexContent.getType().getName() + ".xml" : name, "application/xml");
 		}
