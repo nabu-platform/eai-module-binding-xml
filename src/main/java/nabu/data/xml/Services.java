@@ -21,6 +21,7 @@ import be.nabu.libs.datastore.api.ContextualWritableDatastore;
 import be.nabu.libs.services.ServiceRuntime;
 import be.nabu.libs.services.api.ExecutionContext;
 import be.nabu.libs.types.ComplexContentWrapperFactory;
+import be.nabu.libs.types.DefinedTypeResolverFactory;
 import be.nabu.libs.types.api.ComplexContent;
 import be.nabu.libs.types.api.ComplexType;
 import be.nabu.libs.types.binding.api.Window;
@@ -35,6 +36,9 @@ public class Services {
 	@WebResult(name = "unmarshalled")
 	public Object unmarshal(@WebParam(name = "input") @NotNull InputStream input, @NotNull @WebParam(name = "type") String type, @WebParam(name = "forceRootNameMatch") Boolean forceRootTypeMatch, @WebParam(name = "charset") Charset charset, @WebParam(name = "windows") List<Window> windows, @WebParam(name = "ignoreUndefinedFields") Boolean ignoreUndefinedFields) throws IOException, ParseException {
 		ComplexType resolve = (ComplexType) EAIResourceRepository.getInstance().resolve(type);
+		if (resolve == null) {
+			resolve = (ComplexType) DefinedTypeResolverFactory.getInstance().getResolver().resolve(type);
+		}
 		XMLBinding binding = new XMLBinding(resolve, charset == null ? Charset.defaultCharset() : charset);
 		binding.setForceRootTypeMatch(forceRootTypeMatch != null && forceRootTypeMatch);
 		binding.setIgnoreUndefined(ignoreUndefinedFields != null && ignoreUndefinedFields);
