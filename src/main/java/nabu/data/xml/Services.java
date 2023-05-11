@@ -47,12 +47,13 @@ public class Services {
 	
 	@SuppressWarnings("unchecked")
 	@WebResult(name = "marshalled")
-	public InputStream marshal(@WebParam(name = "data") @NotNull Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "prettyPrint") Boolean prettyPrint) throws IOException {
+	public InputStream marshal(@WebParam(name = "data") @NotNull Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "prettyPrint") Boolean prettyPrint, @WebParam(name = "disableXsi") Boolean disableXsi) throws IOException {
 		ComplexContent complexContent = data instanceof ComplexContent ? (ComplexContent) data : ComplexContentWrapperFactory.getInstance().getWrapper().wrap(data);
 		XMLBinding binding = new XMLBinding(complexContent.getType(), charset == null ? Charset.defaultCharset() : charset);
 		if (prettyPrint != null) {
 			binding.setPrettyPrint(prettyPrint);
 		}
+		binding.setAllowXSI(disableXsi == null || disableXsi == false);
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		binding.marshal(output, complexContent);
 		return new ByteArrayInputStream(output.toByteArray());
@@ -81,7 +82,7 @@ public class Services {
 			return streamable.getURI();
 		}
 		else {
-			InputStream marshal = marshal(data, charset, prettyPrint);
+			InputStream marshal = marshal(data, charset, prettyPrint, false);
 			ContextualWritableDatastore<String> datastore = nabu.frameworks.datastore.Services.getAsDatastore(this.context);
 			return datastore.store(context, marshal, name == null ? complexContent.getType().getName() + ".xml" : name, "application/xml");
 		}
